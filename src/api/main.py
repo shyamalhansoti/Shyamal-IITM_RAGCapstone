@@ -1,6 +1,8 @@
 from __future__ import annotations
 from pathlib import Path
-from src.rag.naive_rag import ask_rag, load_index
+from src.rag.naive_rag import load_index
+from src.rag.qdrant_rag import ask_rag
+from src.rag.qdrant_store import load_store
 
 import logging
 from pathlib import Path
@@ -16,7 +18,7 @@ from dotenv import load_dotenv
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Capstone API — W4")
+app = FastAPI(title="Capstone API")
 
 # Single Settings instance — read once at startup.
 _settings = Settings()
@@ -24,13 +26,13 @@ _db_path = Path(_settings.results_db)
 
 
 # At module top, after `_settings = Settings()`:
-_index = load_index(Path("data/embeddings.json"))
-
+# _index = load_index(Path("data/embeddings.json"))
+_store=load_store()
 @app.post("/ask_batched", response_model=Answer)
 async def ask_batched(q: Question) -> Answer:
     """Non-streaming structured Answer via tool-calling. Persists to SQLite."""
     # answer = await ask_llm(q, _settings)
-    result = ask_rag(q.question, _index, _settings)
+    result = ask_rag(q.question, _store, _settings)
     print(result)
     answer = Answer(
         content=result["answer"],

@@ -67,12 +67,22 @@ def embed_batch(texts: list[str]) -> list[list[float]]:
 def build_index(chunks: list[dict]) -> list[dict]:
     """Attach a 'vector' field to each chunk. Returns the same list."""
     texts = [c["text"] for c in chunks]
+    # Open a clean binary stream to write data progressively
+    with open("embeddings.bin", "wb") as bin_file:
+    
     # Batch in groups of 100 to stay under API limits
-    for i in range(0, len(texts), 100):
-        batch = texts[i:i+100]
-        vectors = embed_batch(batch)
-        for chunk, vec in zip(chunks[i:i+100], vectors):
-            chunk["vector"] = vec
+        for i in range(0, len(texts), 100):
+            batch = texts[i:i+100]
+            vectors = embed_batch(batch)
+            for chunk, vec in zip(chunks[i:i+100], vectors):
+                chunk["vector"] = vec
+            # 2. Extract vectors and enforce Float32 precision matrix
+            matrix = np.array(vectors, dtype=np.float32)
+        
+        # 3. Append raw bytes straight to disk
+        bin_file.write(matrix.tobytes())
+    
+    
     return chunks
 
 

@@ -1,20 +1,23 @@
 import json
 from pathlib import Path
-
+import sys
+import os
 import importlib
-
-# 1. Import the folder/package dynamically using a string
-my_package = importlib.import_module("src.rag.qdrant_store")
-from my_package import (
-    load_store, ensure_collection, upsert_chunks, collection_size,
-)
-
-INDEX_PATH = Path("data/embeddings.json")
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 print(ROOT_DIR)
+
 if str(ROOT_DIR) not in sys.path:
      sys.path.insert(0, str(ROOT_DIR))
+
+from src.rag.qdrant_store import (
+    load_store, ensure_collection, upsert_chunks, collection_size,
+)
+
+
+INDEX_PATH = Path("data/embeddings.json")
+
+
 
 print(f"Loading embeddings from {INDEX_PATH}...")
 with INDEX_PATH.open() as f:

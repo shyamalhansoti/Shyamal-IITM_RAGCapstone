@@ -35,15 +35,16 @@ def _get_client() -> QdrantClient:
       2. QDRANT_URL only → local Docker
       3. Default → http://localhost:6333
     """
-    url = os.environ.get("QDRANT_URL", "http://localhost:6333")
+    url = os.environ.get("QDRANT_URL", "https://a8eae78a-82e4-4b41-9f90-df94f67a829a.eu-west-2-0.aws.cloud.qdrant.io")
     api_key = os.environ.get("QDRANT_API_KEY") or None
     if api_key:
         return QdrantClient(url=url, api_key=api_key)
     return QdrantClient(url=url)
 
-
 def load_store() -> QdrantStore:
     """Return a QdrantStore pointing at the capstone_chunks collection."""
+    # print(_get_client())
+    print(COLLECTION_NAME)
     return QdrantStore(client=_get_client(), collection=COLLECTION_NAME)
 
 

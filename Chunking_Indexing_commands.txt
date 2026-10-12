@@ -1,0 +1,10 @@
+===Chunking==================
+python -c "
+from pathlib import Path
+from src.rag.naive_rag import load_corpus, build_index
+chunks = load_corpus(Path('data/corpus/WHO_factsheet'))
+print(f'{len(chunks)} chunks from {len(set(c[\"source_id\"] for c in chunks))} documents')
+"
+
+Indexing also has the chuking with it. Can you the above command to separately check chunking
+python scripts/build_index.py

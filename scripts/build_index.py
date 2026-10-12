@@ -4,10 +4,13 @@ import os
 
 sys.path.insert(0, '/voc/work/Shyamal-IITM_RAGCapstone')
 
+for path in sys.path:
+ print(path)
+
 from pathlib import Path
 from src.rag.naive_rag import (load_corpus, build_index, save_index,)
 
-CORPUS_DIR = Path("data/corpus/WHO_factsheet")
+CORPUS_DIR = Path("data/corpus/WHO_factsheet_limited")
 INDEX_PATH = Path("data/embeddings.json")
 
 print(f"Loading corpus from {CORPUS_DIR}...")

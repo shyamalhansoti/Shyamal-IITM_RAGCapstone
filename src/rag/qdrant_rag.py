@@ -32,9 +32,11 @@ def embed_query(text: str) -> list[float]:
 
 def retrieve(store: QdrantStore, query: str, k: int = 3) -> list[dict[str, Any]]:
     """Embed the query, ask Qdrant for top-K, return list of hits."""
+    print("I am retrieve in qdrant_rag")
     q_vec = embed_query(query)
+    # print(store.collection_size)
     results = store.client.query_points(
-        collection_name=store.collection,
+        collection_name="capstone_chunks",
         query=q_vec,
         limit=k,
     ).points
@@ -44,9 +46,15 @@ def retrieve(store: QdrantStore, query: str, k: int = 3) -> list[dict[str, Any]]
             "source_id": h.payload["source_id"],
             "text":      h.payload["text"],
             "score":     h.score,
+            
         }
         for h in results
     ]
+
+    query_results = store.client.query_points(
+    collection_name=store.collection_name,
+    query=[0.1, 0.2, 0.3],
+)
 
 
 SYSTEM = (
@@ -59,7 +67,9 @@ SYSTEM = (
 def ask_rag(question: str, store: QdrantStore | None = None,
             settings: Settings | None = None, k: int = 3) -> dict[str, Any]:
     """Full pipeline: embed → retrieve → prompt → generate. Returns dict."""
+    # print("I am ask_rag_Qdrant_rag")
     if store is None:
+        # print(type(store))
         store = load_store()
     
     retrieved = retrieve(store, question, k=k)
