@@ -12,7 +12,9 @@ from dotenv import set_key
 from dotenv import load_dotenv
 load_dotenv()
 
-COLLECTION_NAME = "capstone_chunks"
+# COLLECTION_NAME = "capstone_chunks"
+COLLECTION_NAME = "capstone_chunks_v2"
+
 EMBEDDING_DIM = 1536  # text-embedding-3-small
 
 
@@ -61,6 +63,18 @@ def ensure_collection(store: QdrantStore) -> None:
         vectors_config=VectorParams(size=EMBEDDING_DIM, distance=Distance.COSINE),
     )
 
+def upsert_chunks_v2(store: QdrantStore, chunks: list[dict], vectors: list[list[float]]) -> None:
+    """Upsert with the full 9-field metadata payload from W8's pipeline.
+    
+    chunks[i] is a dict with keys: chunk_id, source, doc_type, section_path,
+    page, date, language, version, ingested_at, text, pii_flags_count.
+    """
+    from qdrant_client.models import PointStruct
+    points = [
+        PointStruct(id=idx, vector=vec, payload=chunk)
+        for idx, (chunk, vec) in enumerate(zip(chunks, vectors))
+    ]
+    store.client.upsert(collection_name=store.collection, points=points)
 
 def upsert_chunks(store: QdrantStore, chunks: list[dict], vectors: list[list[float]]) -> None:
     """Push (chunk, vector) pairs into the store.
@@ -71,17 +85,18 @@ def upsert_chunks(store: QdrantStore, chunks: list[dict], vectors: list[list[flo
     points = [
         PointStruct(
             id=idx,
-            vector=vec,
-            payload={
-                "chunk_id":  chunk["chunk_id"],
-                "source_id": chunk["source_id"],
-                "text":      chunk["text"],
-            },
+            vector=vec,         
+            payload = {k: v for k, v in chunk.items() if k != "vector"}
         )
         for idx, (chunk, vec) in enumerate(zip(chunks, vectors))
     ]
     store.client.upsert(collection_name=store.collection, points=points)
 
+  # payload={
+            #     "chunk_id":  chunk["chunk_id"],
+            #     "source_id": chunk["source_id"] 
+            #     "text":      chunk["text"],
+            # },
 
 def collection_size(store: QdrantStore) -> int:
     """Return the number of points in the collection. Used for smoke tests."""
